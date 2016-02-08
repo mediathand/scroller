@@ -23,8 +23,8 @@
  * based on the pure time difference.
  */
 (function(global) {
-	var time = Date.now || function() {
-		return +new Date();
+	var time = function() {
+		return performance.now();
 	};
 	var desiredFrames = 60;
 	var millisecondsPerSecond = 1000;
@@ -68,7 +68,7 @@
 			var requestCount = 0;
 			var rafHandle = 1;
 			var intervalHandle = null;
-			var lastActive = +new Date();
+			var lastActive = time();
 
 			return function(callback, root) {
 				var callbackHandle = rafHandle++;
@@ -82,7 +82,7 @@
 
 					intervalHandle = setInterval(function() {
 
-						var time = +new Date();
+						var now = time();
 						var currentRequests = requests;
 
 						// Reset data structure before executing callbacks
@@ -91,14 +91,14 @@
 
 						for(var key in currentRequests) {
 							if (currentRequests.hasOwnProperty(key)) {
-								currentRequests[key](time);
-								lastActive = time;
+								currentRequests[key](now);
+								lastActive = now;
 							}
 						}
 
 						// Disable the timeout when nothing happens for a certain
 						// period of time
-						if (time - lastActive > 2500) {
+						if (now - lastActive > 2500) {
 							clearInterval(intervalHandle);
 							intervalHandle = null;
 						}
